@@ -48,7 +48,6 @@ const buildTodoItem = (todo) => {
     if (todoTitleElement) {
         todoTitleElement.innerText = todo.title;
         todoTitleElement.removeAttribute('id');
-
     }
 
     console.log(todoElement);
@@ -71,9 +70,28 @@ const buildTodoItem = (todo) => {
 
     // Return todo element
     return todoElement;
-
-
 }
+
+const buildSearchItem = (search) => {
+    // Find todo item template
+    const searchItemTemplate = document.querySelector('#todoItemTemplate');
+    if (!searchItemTemplate) return null;
+
+    // Clone template
+    const searchItemFragment = searchItemTemplate.content.cloneNode(true);
+    console.log(searchItemFragment);
+    // Fill data :li data-todo-id, update todo title,  add event
+    const searchElement = searchItemFragment.querySelector('li');
+
+    const searchTitleElement = searchItemFragment.querySelector('#todoItemTitle');
+    if (searchTitleElement) {
+        searchTitleElement.innerText = search.title;
+        searchTitleElement.removeAttribute('id');
+    }
+    // Return todo element
+    return searchElement;
+}
+
 
 const renderTodoList = (todoList) => {
     // check, must be array, find ul element
@@ -88,9 +106,19 @@ const renderTodoList = (todoList) => {
 
     }
 }
+const renderSearchList = (filteredList) => {
+    // check, must be array, find ul element
+    if (!Array.isArray(filteredList)) return;
 
-
-
+    const filteredListElement = getSearchListElement();
+    while (filteredListElement.hasChildNodes()) { filteredListElement.removeChild(filteredListElement.firstChild) };
+    if (!filteredListElement) return;
+    for (const search of filteredList) {
+        // build todo item element, add to ul element
+        const searchItemElement = buildSearchItem(search);
+        filteredListElement.appendChild(searchItemElement);
+    }
+}
 
 
 // ----------------
@@ -124,6 +152,7 @@ const getFormValue = () => {
 }
 
 const getTodoListElement = () => document.querySelector('ul#todoList');
+const getSearchListElement = () => document.querySelector('ul#searchList');
 
 const randomNumber = (min, max) => {
     const randomNumber = Math.trunc(Math.random() * (max - min));
@@ -157,6 +186,7 @@ const handleTodoFormSubmit = (e) => {
                     id: randomId,
                     ...formValue,
                 };
+                todoList.push(newTodo);
                 const todoItemElement = buildTodoItem(newTodo);
                 const todoListElement = getTodoListElement();
                 if (todoListElement && todoItemElement) {
@@ -186,3 +216,38 @@ const todoForm = document.querySelector('#todoForm');
 if (todoForm) {
     todoForm.addEventListener('submit', handleTodoFormSubmit);
 }
+
+
+const getSearchFormValue = () => {
+    const searchValue = {};
+    const searchForm = document.querySelector('#searchForm');
+    if (searchForm) {
+        const formControlNameList = ['sTitle'];
+        for (const controlName of formControlNameList) {
+            const control = searchForm.querySelector(`[name=${controlName}]`);
+            searchValue[controlName] = control.value;
+        }
+    } console.log(searchValue);
+    return searchValue;
+}
+const handleSearchFormSubmit = (e) => {
+    console.log('Search Submit nè');
+    e.preventDefault();
+
+    const searchForm = document.querySelector('#searchForm');
+
+
+    if (searchForm) {
+        const searchValue = getSearchFormValue().sTitle;
+
+        console.log(searchValue);
+        let filteredList = todoList.filter(todo => todo.title.toUpperCase().includes(searchValue.toUpperCase()));
+        console.log(filteredList);
+        renderSearchList(filteredList);
+    }
+}
+
+const searchForm = document.querySelector('#searchForm');
+if (searchForm) { searchForm.addEventListener('submit', handleSearchFormSubmit) };
+
+
